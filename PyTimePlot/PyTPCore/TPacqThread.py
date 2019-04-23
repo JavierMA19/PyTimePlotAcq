@@ -102,15 +102,14 @@ SampSettingConf = ({'title': 'Channels Config',
                                   'step': 100,
                                   'siPrefix': True,
                                   'suffix': 'Hz'},
-#                                 {'title': 'Interrup Time',
-#                                  'name': 'Inttime',
-#                                  'type': 'float',
-#                                  'value': 0.10,
-#                                  'step': 0.01,
-#                                  'limits': (0.10, 50),
-#                                  'siPrefix': True,
-#                                  'suffix': 's',
-#                                  'readonly': True},
+                                 {'title': 'Refresh Time',
+                                  'name': 'Refresh',
+                                  'type': 'float',
+                                  'value': 0.10,
+                                  'step': 0.01,
+                                  'limits': (0.10, 300),
+                                  'siPrefix': True,
+                                  'suffix': 's'},
                                  {'title': 'Fs by Channel',
                                   'name': 'FsxCh',
                                   'type': 'float',
@@ -149,6 +148,7 @@ class SampSetParam(pTypes.GroupParameter):
 
         self.SampSet = self.param('Sampling Settings')
         self.Fs = self.SampSet.param('Fs')
+        self.Refresh = self.SampSet.param('Refresh')
         self.FsxCh = self.SampSet.param('FsxCh')
 
         self.ChsConfig = self.param('ChsConfig')
@@ -181,7 +181,7 @@ class SampSetParam(pTypes.GroupParameter):
 #            FsxCh = FsxCh * 0.5
 #        IntTime = (1/(FsxCh))
         self.SampSet.param('FsxCh').setValue(FsxCh)
-#        self.SampSet.param('Inttime').setValue(IntTime)
+        self.SampSet.param('Refresh').setValue(self.Refresh)
 
     def on_Ch_Changed(self):
         self.Chs = []

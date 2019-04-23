@@ -106,11 +106,11 @@ class ChannelsConfig():
         self.DCGain = DCGain
         self._InitAnalogInputs()
 
-    def StartAcquisition(self, Fs, nSamps, Vgs, Vds, **kwargs):
+    def StartAcquisition(self, Fs, nSamps, Refresh, Vgs, Vds, **kwargs):
         print('StartAcquisition')
         self.SetBias(Vgs=Vgs, Vds=Vds)
         self.nSamps = nSamps
-        EveryN = len(self.ChNamesList)*nSamps
+        EveryN = Refresh*Fs # TODO check this
         self.AnalogInputs.ReadContData(Fs=Fs,
                                        EverySamps=EveryN)
 
