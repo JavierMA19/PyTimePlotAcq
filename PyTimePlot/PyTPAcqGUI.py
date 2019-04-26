@@ -204,10 +204,10 @@ class MainWindow(Qt.QWidget):
         print(self.threadAcq.aiData.shape)
         if self.threadSave is not None:
             self.threadSave.AddData(self.threadAcq.aiData)
-        
+
         self.threadPlotter.AddData(self.threadAcq.aiData)
 #        self.threadPlotterRaw.AddData(self.threadAcq.aiData.transpose())
-        self.threadPSDPlotter.AddData(self.threadAcq.aiData))
+        self.threadPSDPlotter.AddData(self.threadAcq.aiData)
         print('Sample time', Ts, np.mean(self.Tss))
 
 if __name__ == '__main__':
