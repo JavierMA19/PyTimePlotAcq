@@ -49,6 +49,7 @@ class ReadAnalog(Daq.Task):
         self.AutoRegisterDoneEvent(0)
 
     def ReadContData(self, Fs, EverySamps):
+        print('ReadContData')
         self.Fs = Fs
         self.EverySamps = np.int32(EverySamps)
         self.ContSamps = True
@@ -56,11 +57,9 @@ class ReadAnalog(Daq.Task):
         self.CfgSampClkTiming("", Fs, Daq.DAQmx_Val_Rising,
                               Daq.DAQmx_Val_ContSamps,
                               self.EverySamps)
-
         self.CfgInputBuffer(self.EverySamps*10)
         self.AutoRegisterEveryNSamplesEvent(Daq.DAQmx_Val_Acquired_Into_Buffer,
                                             self.EverySamps, 0)
-
         self.StartTask()
 
     def StopContData(self):

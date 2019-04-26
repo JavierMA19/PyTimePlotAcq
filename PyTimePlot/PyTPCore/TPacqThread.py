@@ -30,23 +30,23 @@ SampSettingConf = ({'title': 'Channels Config',
                                   'children': ({'name': 'Ch01',
                                                 'tip': 'Ch01',
                                                 'type': 'bool',
-                                                'value': False},
+                                                'value': True},
                                                {'name': 'Ch02',
                                                 'tip': 'Ch02',
                                                 'type': 'bool',
-                                                'value': False},
+                                                'value': True},
                                                {'name': 'Ch03',
                                                 'tip': 'Ch03',
                                                 'type': 'bool',
-                                                'value': False},
+                                                'value': True},
                                                {'name': 'Ch04',
                                                 'tip': 'Ch04',
                                                 'type': 'bool',
-                                                'value': False},
+                                                'value': True},
                                                {'name': 'Ch05',
                                                 'tip': 'Ch05',
                                                 'type': 'bool',
-                                                'value': False},
+                                                'value': True},
                                                {'name': 'Ch06',
                                                 'tip': 'Ch06',
                                                 'type': 'bool',
@@ -62,23 +62,23 @@ SampSettingConf = ({'title': 'Channels Config',
                                                {'name': 'Ch09',
                                                 'tip': 'Ch09',
                                                 'type': 'bool',
-                                                'value': False},
+                                                'value': True},
                                                {'name': 'Ch10',
                                                 'tip': 'Ch10',
                                                 'type': 'bool',
-                                                'value': False},
+                                                'value': True},
                                                {'name': 'Ch11',
                                                 'tip': 'Ch11',
                                                 'type': 'bool',
-                                                'value': False},
+                                                'value': True},
                                                {'name': 'Ch12',
                                                 'tip': 'Ch12',
                                                 'type': 'bool',
-                                                'value': False},
+                                                'value': True},
                                                {'name': 'Ch13',
                                                 'tip': 'Ch13',
                                                 'type': 'bool',
-                                                'value': False},
+                                                'value': True},
                                                {'name': 'Ch14',
                                                 'tip': 'Ch14',
                                                 'type': 'bool',
@@ -105,7 +105,7 @@ SampSettingConf = ({'title': 'Channels Config',
                                  {'title': 'Refresh Time',
                                   'name': 'Refresh',
                                   'type': 'float',
-                                  'value': 0.10,
+                                  'value': 1,
                                   'step': 0.01,
                                   'limits': (0.10, 300),
                                   'siPrefix': True,
@@ -176,9 +176,9 @@ class SampSetParam(pTypes.GroupParameter):
 
     def on_Fs_Changed(self):
         Ts = 1/self.Fs.value()
-        FsxCh = 1/(Ts*len(self.Columns))
-#        if self.Acq['AcqDC'] and self.Acq['AcqAC'] is True:
-#            FsxCh = FsxCh * 0.5
+        FsxCh = 1/(Ts*len(self.Chs))
+        if self.Acq['AcqDC'] and self.Acq['AcqAC'] is True:
+            FsxCh = FsxCh * 0.5
 #        IntTime = (1/(FsxCh))
         self.SampSet.param('FsxCh').setValue(FsxCh)
         self.SampSet.param('Refresh').setValue(self.Refresh)
@@ -230,25 +230,29 @@ class SampSetParam(pTypes.GroupParameter):
 
 
 class DataAcquisitionThread(Qt.QThread):
-    NewMuxData = Qt.pyqtSignal()
+    NewTimeData = Qt.pyqtSignal()
 
-    def __init__(self, ChannelsConfigKW, SampKw, AvgIndex=5):
+    def __init__(self, ChannelsConfigKW, SampKw):
+        print('InitDataAcqThread')
         super(DataAcquisitionThread, self).__init__()
+        print(ChannelsConfigKW)
         self.DaqInterface = CoreMod.ChannelsConfig(**ChannelsConfigKW)
         self.DaqInterface.DataEveryNEvent = self.NewData
         self.SampKw = SampKw
-        self.AvgIndex = AvgIndex
 
     def run(self, *args, **kwargs):
+        print('Run')
+        print(self.SampKw)
         self.DaqInterface.StartAcquisition(**self.SampKw)
         loop = Qt.QEventLoop()
         loop.exec_()
 
-    def CalcAverage(self, MuxData):
+#    def CalcAverage(self, MuxData):
 #        Avg = np.mean(LinesSorted[:,-2:,:], axis=1)
-        return np.mean(MuxData[:, self.AvgIndex:, :], axis=1)
+#        return np.mean(MuxData[:, self.AvgIndex:, :], axis=1)
 
     def NewData(self, aiData):
+        print('NewData')
 #        self.OutData = self.CalcAverage(MuxData)
         self.aiData = aiData
-        self.NewMuxData.emit()
+        self.NewTimeData.emit()

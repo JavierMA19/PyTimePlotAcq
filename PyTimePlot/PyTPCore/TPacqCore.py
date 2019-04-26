@@ -6,7 +6,7 @@ Created on Tue Mar  5 14:13:45 2019
 @author: aguimera
 """
 
-import PyTPCore.DaqInterface as DaqInt
+import DaqInterface as DaqInt
 import numpy as np
 
 
@@ -40,14 +40,18 @@ class ChannelsConfig():
     ACChannelIndex = None
     ChNamesList = None
     AnalogInputs = None
+    GateChannel = None
 
     # Events list
-    DCDataDoneEvent = None
-    DCDataEveryNEvent = None
-    ACDataDoneEvent = None
-    ACDataEveryNEvent = None
-    GateDataDoneEvent = None
-    GateDataEveryNEvent = None
+    DataEveryNEvent = None
+    DataDoneEvent = None
+
+#    DCDataDoneEvent = None
+#    DCDataEveryNEvent = None
+#    ACDataDoneEvent = None
+#    ACDataEveryNEvent = None
+#    GateDataDoneEvent = None
+#    GateDataEveryNEvent = None
 
     def _InitAnalogInputs(self):
         print('InitAnalogInputs')
@@ -90,7 +94,8 @@ class ChannelsConfig():
         self.VsOut = DaqInt.WriteAnalog((ChVs,))
         self.VdsOut = DaqInt.WriteAnalog((ChVds,))
 
-    def __init__(self, Channels, GateChannel,
+    def __init__(self, Channels,
+#                 GateChannel,
                  AcqDC=True, AcqAC=True,
                  ChVds='ao0', ChVs='ao1',
                  ACGain=1e6, DCGain=10e3):
@@ -98,19 +103,20 @@ class ChannelsConfig():
         self._InitAnalogOutputs(ChVds=ChVds, ChVs=ChVs)
 
         self.ChNamesList = sorted(Channels)
-        self.GateChannel = GateChannel
-        print self.ChNamesList
+#        self.GateChannel = GateChannel
+        print(self.ChNamesList)
         self.AcqAC = AcqAC
         self.AcqDC = AcqDC
         self.ACGain = ACGain
         self.DCGain = DCGain
         self._InitAnalogInputs()
 
-    def StartAcquisition(self, Fs, nSamps, Refresh, Vgs, Vds, **kwargs):
+    def StartAcquisition(self, Fs, Refresh, Vgs, Vds, **kwargs):
         print('StartAcquisition')
         self.SetBias(Vgs=Vgs, Vds=Vds)
-        self.nSamps = nSamps
+        print(Refresh)
         EveryN = Refresh*Fs # TODO check this
+        print(EveryN)
         self.AnalogInputs.ReadContData(Fs=Fs,
                                        EverySamps=EveryN)
 
@@ -123,6 +129,7 @@ class ChannelsConfig():
         self.Vds = Vds
 
     def _SortChannels(self, data, SortDict):
+        print('SortChannels')
         (samps, inch) = data.shape
         sData = np.zeros((samps, len(SortDict)))
         for chn, inds in SortDict.iteritems():
@@ -131,19 +138,40 @@ class ChannelsConfig():
         return sData
 
     def EveryNEventCallBack(self, Data):
-        _DCDataEveryNEvent = self.DCDataEveryNEvent
-        _GateDataEveryNEvent = self.GateDataEveryNEvent
-        _ACDataEveryNEvent = self.ACDataEveryNEvent
+        print('EveryNevent')
 
-        if _GateDataEveryNEvent:
-            _GateDataEveryNEvent(self._SortChannels(Data,
-                                                    self.GateChannelIndex))
-        if _DCDataEveryNEvent:
-            _DCDataEveryNEvent(self._SortChannels(Data,
-                                                  self.DCChannelIndex))
-        if _ACDataEveryNEvent:
-            _ACDataEveryNEvent(self._SortChannels(Data,
-                                                  self.ACChannelIndex))
+        _DataEveryNEvent = self.DataEveryNEvent
+
+        if _DataEveryNEvent is not None:
+            if self.AcqDC:
+                aiDataDC = self._SortChannels(Data, self.DCChannelIndex)
+                aiDataDC = (aiDataDC-self.BiasVd) / self.DCGain
+
+            if self.AcqAC:
+                aiDataAC = self._SortChannels(Data, self.ACChannelIndex)
+                aiDataAC = aiDataAC / self.ACGain
+
+            if self.AcqAC and self.AcqDC:
+                aiData = np.vstack((aiDataDC, aiDataAC))
+                _DataEveryNEvent(aiData)
+            elif self.AcqAC:
+                _DataEveryNEvent(aiDataAC)
+            elif self.AcqDC:
+                _DataEveryNEvent(aiDataDC)
+        
+#        _DCDataEveryNEvent = self.DCDataEveryNEvent
+#        _GateDataEveryNEvent = self.GateDataEveryNEvent
+#        _ACDataEveryNEvent = self.ACDataEveryNEvent
+#
+#        if _GateDataEveryNEvent:
+#            _GateDataEveryNEvent(self._SortChannels(Data,
+#                                                    self.GateChannelIndex))
+#        if _DCDataEveryNEvent:
+#            _DCDataEveryNEvent(self._SortChannels(Data,
+#                                                  self.DCChannelIndex))
+#        if _ACDataEveryNEvent:
+#            _ACDataEveryNEvent(self._SortChannels(Data,
+#                                                  self.ACChannelIndex))
 
     def DoneEventCallBack(self, Data):
         print('Done callback')

@@ -140,17 +140,14 @@ class MainWindow(Qt.QWidget):
         self.Parameters.sigTreeStateChanged.connect(self.on_pars_changed)
 
     def on_btnStart(self):
+        print('ButStart')
         if self.threadAcq is None:
             GenKwargs = self.SamplingPar.GetSampKwargs()
             GenChanKwargs = self.SamplingPar.GetChannelsConfigKwargs()
-            AvgIndex = self.SamplingPar.SampSet.param('nAvg').value()
             self.threadAcq = AcqMod.DataAcquisitionThread(ChannelsConfigKW=GenChanKwargs,
-                                                          SampKw=GenKwargs,
-                                                          AvgIndex=AvgIndex)
-
-            self.threadAcq.NewMuxData.connect(self.on_NewSample)
+                                                          SampKw=GenKwargs)
+            self.threadAcq.NewTimeData.connect(self.on_NewSample)
             self.threadAcq.start()
-
             PlotterKwargs = self.PlotParams.GetParams()
 
 #            FileName = self.Parameters.param('File Path').value()
@@ -199,18 +196,19 @@ class MainWindow(Qt.QWidget):
             self.btnAcq.setText("Start Gen")
 
     def on_NewSample(self):
+        print('On_NewSample')
         ''' Visualization of streaming data-WorkThread. '''
         Ts = time.time() - self.OldTime
         self.Tss.append(Ts)
         self.OldTime = time.time()
         print(self.threadAcq.aiData.shape)
         if self.threadSave is not None:
-            self.threadSave.AddData(self.threadAcq.OutData.transpose())
-        self.threadPlotter.AddData(self.threadAcq.OutData.transpose())
+            self.threadSave.AddData(self.threadAcq.aiData)
+        
+        self.threadPlotter.AddData(self.threadAcq.aiData)
 #        self.threadPlotterRaw.AddData(self.threadAcq.aiData.transpose())
-        self.threadPSDPlotter.AddData(self.threadAcq.OutData.transpose())
+        self.threadPSDPlotter.AddData(self.threadAcq.aiData))
         print('Sample time', Ts, np.mean(self.Tss))
-
 
 if __name__ == '__main__':
     app = Qt.QApplication([])
