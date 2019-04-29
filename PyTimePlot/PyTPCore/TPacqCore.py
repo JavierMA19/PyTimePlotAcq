@@ -88,7 +88,6 @@ class ChannelsConfig():
         self._InitAnalogOutputs(ChVds=ChVds, ChVs=ChVs)
 
         self.ChNamesList = sorted(Channels)
-        print(self.ChNamesList)
         self.AcqAC = AcqAC
         self.AcqDC = AcqDC
         self.ACGain = ACGain
@@ -96,11 +95,8 @@ class ChannelsConfig():
         self._InitAnalogInputs()
 
     def StartAcquisition(self, Fs, Refresh, Vgs, Vds, **kwargs):
-        print('StartAcquisition')
         self.SetBias(Vgs=Vgs, Vds=Vds)
-        print(Refresh)
         EveryN = Refresh*Fs # TODO check this
-        print(EveryN)
         self.AnalogInputs.ReadContData(Fs=Fs,
                                        EverySamps=EveryN)
 
@@ -113,7 +109,6 @@ class ChannelsConfig():
         self.Vds = Vds
 
     def _SortChannels(self, data, SortDict):
-        print('SortChannels')
         (samps, inch) = data.shape
         sData = np.zeros((samps, len(SortDict)))
         for chn, inds in sorted(SortDict.iteritems()):
@@ -122,7 +117,6 @@ class ChannelsConfig():
         return sData
 
     def EveryNEventCallBack(self, Data):
-        print('EveryNevent', self.DCGain, self.ACGain)
 
         _DataEveryNEvent = self.DataEveryNEvent
 

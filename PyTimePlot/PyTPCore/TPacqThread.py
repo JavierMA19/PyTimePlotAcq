@@ -149,7 +149,6 @@ class SampSetParam(pTypes.GroupParameter):
         self.on_Ch_Changed()
         self.on_Fs_Changed()
 
-        print(self.children())
         # Signals
         self.Channels.sigTreeStateChanged.connect(self.on_Ch_Changed)
         self.ChsConfig.param('AcqAC').sigValueChanged.connect(self.on_Acq_Changed)
@@ -174,7 +173,6 @@ class SampSetParam(pTypes.GroupParameter):
                 self.SampSet.param('Fs').setValue(1e6/(len(self.Chs)*Index))
 
     def on_Ch_Changed(self):
-        print('on_Ch_Changed')
         self.Chs = []
         for p in self.Channels.children():
             if p.value() is True:
@@ -200,7 +198,6 @@ class SampSetParam(pTypes.GroupParameter):
                 ChNames[Ch + 'AC'] = Ind
                 Ind += 1
 
-        print(ChNames, 'GetChannelsNames')
         return ChNames
 
     def GetSampKwargs(self):
@@ -216,7 +213,6 @@ class SampSetParam(pTypes.GroupParameter):
                 ChanKwargs[p.name()] = self.Chs
             else:
                 ChanKwargs[p.name()] = p.value()
-        print(ChanKwargs, 'GetChannelsConfigKwargs')
         return ChanKwargs
 
 ###############################################################################
@@ -226,22 +222,16 @@ class DataAcquisitionThread(Qt.QThread):
     NewTimeData = Qt.pyqtSignal()
 
     def __init__(self, ChannelsConfigKW, SampKw):
-        print('InitDataAcqThread')
         super(DataAcquisitionThread, self).__init__()
-        print(ChannelsConfigKW)
         self.DaqInterface = CoreMod.ChannelsConfig(**ChannelsConfigKW)
         self.DaqInterface.DataEveryNEvent = self.NewData
         self.SampKw = SampKw
 
     def run(self, *args, **kwargs):
-        print('Run')
-        print(self.SampKw)
         self.DaqInterface.StartAcquisition(**self.SampKw)
         loop = Qt.QEventLoop()
         loop.exec_()
 
-
     def NewData(self, aiData):
-        print('NewData')
         self.aiData = aiData
         self.NewTimeData.emit()
