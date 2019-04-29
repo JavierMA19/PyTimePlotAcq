@@ -105,19 +105,10 @@ SampSettingConf = ({'title': 'Channels Config',
                                  {'title': 'Refresh Time',
                                   'name': 'Refresh',
                                   'type': 'float',
-                                  'value': 1,
+                                  'value': 1.0,
                                   'step': 0.01,
-                                  'limits': (0.10, 300),
-                                  'siPrefix': True,
+                                  'limits': (0.01, 500),
                                   'suffix': 's'},
-                                 {'title': 'Fs by Channel',
-                                  'name': 'FsxCh',
-                                  'type': 'float',
-                                  'value': 1e4,
-                                  'step': 100,
-                                  'siPrefix': True,
-                                  'suffix': 'Hz',
-                                  'readonly': True},
                                  {'title': 'Vds',
                                   'name': 'Vds',
                                   'type': 'float',
@@ -149,7 +140,6 @@ class SampSetParam(pTypes.GroupParameter):
         self.SampSet = self.param('Sampling Settings')
         self.Fs = self.SampSet.param('Fs')
         self.Refresh = self.SampSet.param('Refresh')
-        self.FsxCh = self.SampSet.param('FsxCh')
 
         self.ChsConfig = self.param('ChsConfig')
         self.Channels = self.ChsConfig.param('Channels')
@@ -172,18 +162,19 @@ class SampSetParam(pTypes.GroupParameter):
                 self.Acq[p.name()] = p.value()
             if p.name() is 'AcqDC':
                 self.Acq[p.name()] = p.value()
+        self.on_Fs_Changed()
         self.NewConf.emit()
 
     def on_Fs_Changed(self):
-        Ts = 1/self.Fs.value()
-        FsxCh = 1/(Ts*len(self.Chs))
-        if self.Acq['AcqDC'] and self.Acq['AcqAC'] is True:
-            FsxCh = FsxCh * 0.5
-#        IntTime = (1/(FsxCh))
-        self.SampSet.param('FsxCh').setValue(FsxCh)
-        self.SampSet.param('Refresh').setValue(self.Refresh)
+        if self.Chs:
+            Index = 1
+            if self.Acq['AcqDC'] and self.Acq['AcqAC'] is True:
+                Index = 2
+            if self.Fs.value() > (1e6/(len(self.Chs)*Index)):
+                self.SampSet.param('Fs').setValue(1e6/(len(self.Chs)*Index))
 
     def on_Ch_Changed(self):
+        print('on_Ch_Changed')
         self.Chs = []
         for p in self.Channels.children():
             if p.value() is True:
@@ -208,6 +199,7 @@ class SampSetParam(pTypes.GroupParameter):
             for Ch in self.Chs:
                 ChNames[Ch + 'DC'] = Ind
                 Ind += 1
+        print(ChNames, 'GetChannelsNames')
         return ChNames
 
     def GetSampKwargs(self):
@@ -223,7 +215,7 @@ class SampSetParam(pTypes.GroupParameter):
                 ChanKwargs[p.name()] = self.Chs
             else:
                 ChanKwargs[p.name()] = p.value()
-        print(ChanKwargs)
+        print(ChanKwargs, 'GetChannelsConfigKwargs')
         return ChanKwargs
 
 ###############################################################################
@@ -247,12 +239,8 @@ class DataAcquisitionThread(Qt.QThread):
         loop = Qt.QEventLoop()
         loop.exec_()
 
-#    def CalcAverage(self, MuxData):
-#        Avg = np.mean(LinesSorted[:,-2:,:], axis=1)
-#        return np.mean(MuxData[:, self.AvgIndex:, :], axis=1)
 
     def NewData(self, aiData):
         print('NewData')
-#        self.OutData = self.CalcAverage(MuxData)
         self.aiData = aiData
         self.NewTimeData.emit()

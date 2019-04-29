@@ -40,18 +40,12 @@ class MainWindow(Qt.QWidget):
 
         self.PlotParams = PltMod.PlotterParameters(name='Plot options')
         self.PlotParams.SetChannels(self.SamplingPar.GetChannelsNames())
-        self.PlotParams.param('Fs').setValue(self.SamplingPar.FsxCh.value())
+        self.PlotParams.param('Fs').setValue(self.SamplingPar.Fs.value())
 
         self.Parameters.addChild(self.PlotParams)
 
-#        self.RawPlotParams = PltMod.PlotterParameters(name='Raw Plot')
-#        self.RawPlotParams.SetChannels(self.SamplingPar.GetRowNames())
-#        self.RawPlotParams.param('Fs').setValue(self.SamplingPar.Fs.value())
-
-#        self.Parameters.addChild(self.RawPlotParams)
-
         self.PSDParams = PltMod.PSDParameters(name='PSD Options')
-        self.PSDParams.param('Fs').setValue(self.SamplingPar.FsxCh.value())
+        self.PSDParams.param('Fs').setValue(self.SamplingPar.Fs.value())
         self.Parameters.addChild(self.PSDParams)
         self.Parameters.sigTreeStateChanged.connect(self.on_pars_changed)
 
@@ -77,15 +71,6 @@ class MainWindow(Qt.QWidget):
                                                            name='Configuration File')
         self.Parameters.addChild(self.ConfigParameters)
 
-#        self.FileParams = Parameter.create(name='File Params',
-#                                           type='group',
-#                                           children=self.FileParameters)
-#        self.pars.addChild(self.FileParams)
-#        self.FileParams.param('Save File').sigActivated.connect(self.FileDialog)
-#
-#        self.GenChannelsViewParams(nChannels=self.DataGenConf.NChannels.value(),
-#                                   nWindows=1)
-
     def on_pars_changed(self, param, changes):
         print("tree changes:")
         for param, change, data in changes:
@@ -99,12 +84,9 @@ class MainWindow(Qt.QWidget):
         print('  data:      %s' % str(data))
         print('  ----------')
 
-        if childName == 'SampSettingConf.Sampling Settings.FsxCh':
+        if childName == 'SampSettingConf.Sampling Settings.Fs':
             self.PlotParams.param('Fs').setValue(data)
             self.PSDParams.param('Fs').setValue(data)
-
-#        if childName == 'SampSettingConf.Sampling Settings.Fs':
-#            self.RawPlotParams.param('Fs').setValue(data)
 
         if childName == 'SampSettingConf.Sampling Settings.Vgs':
             Vds = self.threadAcq.DaqInterface.Vds
@@ -133,10 +115,6 @@ class MainWindow(Qt.QWidget):
     def on_NewConf(self):
         self.Parameters.sigTreeStateChanged.disconnect()
         self.PlotParams.SetChannels(self.SamplingPar.GetChannelsNames())
-#        ch = {}
-#        for i, r in enumerate(sorted(self.SamplingPar.Rows)):
-#            ch[r] = i
-#        self.RawPlotParams.SetChannels(self.SamplingPar.GetRowNames())
         self.Parameters.sigTreeStateChanged.connect(self.on_pars_changed)
 
     def on_btnStart(self):
@@ -149,6 +127,7 @@ class MainWindow(Qt.QWidget):
             self.threadAcq.NewTimeData.connect(self.on_NewSample)
             self.threadAcq.start()
             PlotterKwargs = self.PlotParams.GetParams()
+            print('PlotterKwargs' ,PlotterKwargs)
 
 #            FileName = self.Parameters.param('File Path').value()
             FileName = self.FileParameters.FilePath()
@@ -160,19 +139,12 @@ class MainWindow(Qt.QWidget):
                     print('Remove File')
                     os.remove(FileName)
                 MaxSize = self.FileParameters.param('MaxSize').value()
-#                MaxSize = self.Parameters.param('MaxSize').value()
                 self.threadSave = FileMod.DataSavingThread(FileName=FileName,
                                                            nChannels=PlotterKwargs['nChannels'],
                                                            MaxSize=MaxSize)
                 self.threadSave.start()
             self.threadPlotter = PltMod.Plotter(**PlotterKwargs)
             self.threadPlotter.start()
-
-#            RawPlotterKwargs = self.RawPlotParams.GetParams()
-#            print(PlotterKwargs)
-#            self.threadPlotterRaw = PltMod.Plotter(ShowTime=False,
-#                                                   **RawPlotterKwargs)
-#            self.threadPlotterRaw.start()
 
             self.threadPSDPlotter = PltMod.PSDPlotter(ChannelConf=PlotterKwargs['ChannelConf'],
                                                       nChannels=PlotterKwargs['nChannels'],
@@ -207,9 +179,9 @@ class MainWindow(Qt.QWidget):
             self.threadSave.AddData(self.threadAcq.aiData)
 
         self.threadPlotter.AddData(self.threadAcq.aiData)
-#        self.threadPlotterRaw.AddData(self.threadAcq.aiData)
-#        self.threadPSDPlotter.AddData(self.threadAcq.aiData)
+        self.threadPSDPlotter.AddData(self.threadAcq.aiData)
         print('Sample time', Ts, np.mean(self.Tss))
+
 
 if __name__ == '__main__':
     app = Qt.QApplication([])
