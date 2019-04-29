@@ -45,7 +45,7 @@ PlotterPars = ({'name': 'Fs',
                 'value': 1},
                {'name': 'ViewBuffer',
                 'type': 'float',
-                'value': 20,
+                'value': 30,
                 'step': 1,
                 'siPrefix': True,
                 'suffix': 's'},
@@ -57,7 +57,7 @@ PlotterPars = ({'name': 'Fs',
                 'suffix': 's'},
                {'name': 'RefreshTime',
                 'type': 'float',
-                'value': 1,
+                'value': 4,
                 'step': 1,
                 'siPrefix': True,
                 'suffix': 's'},
@@ -91,7 +91,8 @@ class PlotterParameters(pTypes.GroupParameter):
         self.param('nChannels').setValue(nChannels)
         chPWind = int(nChannels/self.param('Windows').value())
         Chs = []
-        for chn, ind in Channels.items():
+        for chn in sorted(Channels, key=Channels.get):
+            ind = Channels[chn]
             Ch = copy.deepcopy(ChannelPars)
             pen = pg.mkPen((ind, 1.3*nChannels))
             Ch['name'] = chn

@@ -190,15 +190,16 @@ class SampSetParam(pTypes.GroupParameter):
             if tyv:
                 acqTys.append(tyn)
 
+        if 'AcqDC' in acqTys:
+            for Ch in self.Chs:
+                ChNames[Ch + 'DC'] = Ind
+                Ind += 1
+
         if 'AcqAC' in acqTys:
             for Ch in self.Chs:
                 ChNames[Ch + 'AC'] = Ind
                 Ind += 1
 
-        if 'AcqDC' in acqTys:
-            for Ch in self.Chs:
-                ChNames[Ch + 'DC'] = Ind
-                Ind += 1
         print(ChNames, 'GetChannelsNames')
         return ChNames
 
