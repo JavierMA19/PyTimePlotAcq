@@ -5,8 +5,9 @@ Created on Tue Mar  5 14:13:45 2019
 
 @author: aguimera
 """
+import PyCont.DaqInterface as DaqInt
 
-import DaqInterface as DaqInt
+#import DaqInterface as DaqInt
 import numpy as np
 
 
