@@ -187,6 +187,7 @@ class MainWindow(Qt.QWidget):
         self.threadPSDPlotter.AddData(self.threadAcq.aiData)
         print('Sample time', Ts, np.mean(self.Tss))
 
+
 def main():
     import argparse
     import pkg_resources
