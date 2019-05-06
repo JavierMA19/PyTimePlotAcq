@@ -26,7 +26,7 @@ Created on Thu Dec 21 18:30:42 2017
 
 from setuptools import setup, find_packages
 
-_version = '0.0.2'
+_version = '0.0.2.1'
 
 long_description = """
                    Tools for acquire continuously devices                 
@@ -61,7 +61,7 @@ classifiers = ['Development Status :: 3 - Alpha',
                'Topic :: Scientific/Engineering',
                'Topic :: Software Development :: User Interfaces']
 
-setup(name="PyTimeContAcquisition",
+setup(name="PyTimePlotAcq",
       version=_version,
       description="Continuous acquisition tools",
       long_description=long_description,
