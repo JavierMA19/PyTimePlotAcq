@@ -15,6 +15,34 @@ import PyCont.FileModule as FileMod
 #import FileModule as FileMod
 
 
+class ScalableGroup(pTypes.GroupParameter):
+    def __init__(self, **opts):
+        opts['type'] = 'group'
+        opts['addText'] = ""
+        opts['addList'] = ['Col1', 'Col2', 'Col3']
+        pTypes.GroupParameter.__init__(self, **opts)
+    
+    def addNew(self, typ):
+        print(typ)
+        
+#        self.items(typ)
+#        self.names(typ)
+#        self.setAddList(typ)
+        self.setValue(typ)
+        self.SetText(typ)
+
+    def SetText(self, typ, **opts):
+        opts['addText'] = typ
+
+#        self.addChild(dict(name=typ, value=typ, removable=True, renamable=True))
+#        val = {
+#            'Col1': 'Col1',
+#            'Col2': 'Col2',
+#            'Col3': 'Col3'}
+#        }[typ]
+#        self.addChild(dict(name="ScalableParam %d" % (len(self.childs)+1), type=typ, value=val, removable=True, renamable=True))
+
+
 SampSettingConf = ({'title': 'Channels Config',
                     'name': 'ChsConfig',
                     'type': 'group',
@@ -93,6 +121,18 @@ SampSettingConf = ({'title': 'Channels Config',
                                                 'tip': 'Ch16',
                                                 'type': 'bool',
                                                 'value': True},), },
+#                                 {'tittle': 'Columns',
+#                                  'name': 'Columns',
+#                                  'type': 'group',
+#                                  'children': ({'name': 'Columns',
+#                                                'tip': 'Columns',
+#                                                'type': 'list',
+#                                                'value': ['Col1', 'Col2', 'Col3'],
+#                                                },), },
+    ScalableGroup(name="Columnss", children=[
+
+    ]),
+
                                  ), },
 
                    {'name': 'Sampling Settings',
