@@ -15,34 +15,6 @@ import PyCont.FileModule as FileMod
 #import FileModule as FileMod
 
 
-class ScalableGroup(pTypes.GroupParameter):
-    def __init__(self, **opts):
-        opts['type'] = 'group'
-        opts['addText'] = ""
-        opts['addList'] = ['Col1', 'Col2', 'Col3']
-        pTypes.GroupParameter.__init__(self, **opts)
-    
-    def addNew(self, typ):
-        print(typ)
-        
-#        self.items(typ)
-#        self.names(typ)
-#        self.setAddList(typ)
-        self.setValue(typ)
-        self.SetText(typ)
-
-    def SetText(self, typ, **opts):
-        opts['addText'] = typ
-
-#        self.addChild(dict(name=typ, value=typ, removable=True, renamable=True))
-#        val = {
-#            'Col1': 'Col1',
-#            'Col2': 'Col2',
-#            'Col3': 'Col3'}
-#        }[typ]
-#        self.addChild(dict(name="ScalableParam %d" % (len(self.childs)+1), type=typ, value=val, removable=True, renamable=True))
-
-
 SampSettingConf = ({'title': 'Channels Config',
                     'name': 'ChsConfig',
                     'type': 'group',
@@ -121,17 +93,23 @@ SampSettingConf = ({'title': 'Channels Config',
                                                 'tip': 'Ch16',
                                                 'type': 'bool',
                                                 'value': True},), },
-#                                 {'tittle': 'Columns',
-#                                  'name': 'Columns',
-#                                  'type': 'group',
-#                                  'children': ({'name': 'Columns',
-#                                                'tip': 'Columns',
-#                                                'type': 'list',
-#                                                'value': ['Col1', 'Col2', 'Col3'],
-#                                                },), },
-    ScalableGroup(name="Columnss", children=[
-
-    ]),
+                                 {'tittle': 'ColumnsControl',
+                                  'name': 'DigColumns',
+                                  'type': 'group',
+                                  'children': ({'name': 'Columns',
+                                                'tip': 'Columns',
+                                                'type': 'list',
+                                                'values': ['Col1', 
+                                                           'Col2', 
+                                                           'Col3',
+                                                           'Col4', 
+                                                           'Col5',
+                                                           'Col6', 
+                                                           'Col7',
+                                                           'Col8', 
+                                                           '',
+                                                           ],
+                                                },), },
 
                                  ), },
 
@@ -173,6 +151,7 @@ class SampSetParam(pTypes.GroupParameter):
     NewConf = Qt.pyqtSignal()
 
     Chs = []
+    Col = []
     Acq = {}
 
     def __init__(self, **kwargs):
@@ -185,6 +164,7 @@ class SampSetParam(pTypes.GroupParameter):
 
         self.ChsConfig = self.param('ChsConfig')
         self.Channels = self.ChsConfig.param('Channels')
+        self.Columns = self.ChsConfig.param('DigColumns')
 
         # Init Settings
         self.on_Acq_Changed()
@@ -193,6 +173,7 @@ class SampSetParam(pTypes.GroupParameter):
 
         # Signals
         self.Channels.sigTreeStateChanged.connect(self.on_Ch_Changed)
+        self.Columns.sigTreeStateChanged.connect(self.on_Ch_Changed)
         self.ChsConfig.param('AcqAC').sigValueChanged.connect(self.on_Acq_Changed)
         self.ChsConfig.param('AcqDC').sigValueChanged.connect(self.on_Acq_Changed)
         self.Fs.sigValueChanged.connect(self.on_Fs_Changed)
@@ -226,18 +207,20 @@ class SampSetParam(pTypes.GroupParameter):
         Ind = 0
         ChNames = {}
         acqTys = []
+        self.Col = self.Columns.param('Columns').value()
+        print(self.Col, 'Col')
         for tyn, tyv in self.Acq.items():
             if tyv:
                 acqTys.append(tyn)
 
         if 'AcqDC' in acqTys:
             for Ch in self.Chs:
-                ChNames[Ch + 'DC'] = Ind
+                ChNames[Ch + self.Col + 'DC'] = Ind
                 Ind += 1
 
         if 'AcqAC' in acqTys:
             for Ch in self.Chs:
-                ChNames[Ch + 'AC'] = Ind
+                ChNames[Ch + self.Col + 'AC'] = Ind
                 Ind += 1
 
         return ChNames
@@ -253,8 +236,11 @@ class SampSetParam(pTypes.GroupParameter):
         for p in self.ChsConfig.children():
             if p.name() is 'Channels':
                 ChanKwargs[p.name()] = self.Chs
+            elif p.name() is 'DigColumns':
+                ChanKwargs[p.name()] = self.Col
             else:
                 ChanKwargs[p.name()] = p.value()
+        print(ChanKwargs, 'ChanKwargs')
         return ChanKwargs
 
 ###############################################################################
@@ -265,6 +251,7 @@ class DataAcquisitionThread(Qt.QThread):
 
     def __init__(self, ChannelsConfigKW, SampKw):
         super(DataAcquisitionThread, self).__init__()
+        print('ChannelsConfigKW', ChannelsConfigKW)
         self.DaqInterface = CoreMod.ChannelsConfig(**ChannelsConfigKW)
         self.DaqInterface.DataEveryNEvent = self.NewData
         self.SampKw = SampKw
