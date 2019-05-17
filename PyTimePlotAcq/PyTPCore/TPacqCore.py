@@ -50,6 +50,7 @@ class ChannelsConfig():
     ChNamesList = None
     AnalogInputs = None
     GateChannel = None
+    DigitalOutputs = None
 
     # Events list
     DataEveryNEvent = None
@@ -118,12 +119,13 @@ class ChannelsConfig():
         self._InitAnalogInputs()
         print(DigColumns)
         self.DigColumns = [DigColumns]
-        if self.DigColumns:
+        if DigColumns:
             self._InitDigitalOutputs()
 
     def StartAcquisition(self, Fs, Refresh, Vgs, Vds, **kwargs):
         self.SetBias(Vgs=Vgs, Vds=Vds)
-        self.SetDigitalOutputs()
+        if self.DigitalOutputs:
+            self.SetDigitalOutputs()
 
         EveryN = Refresh*Fs # TODO check this
         self.AnalogInputs.ReadContData(Fs=Fs,
