@@ -89,10 +89,10 @@ class ChannelsConfig():
         print(self.DigColumns)
         DOChannels = []
 
-#        for digc in self.DigColumns:
-#            print(digc)
-        DOChannels.append(doColumns[self.DigColumns][0])
-        DOChannels.append(doColumns[self.DigColumns][1])
+        for digc in self.DigColumns:
+            print(digc)
+            DOChannels.append(doColumns[digc][0])
+            DOChannels.append(doColumns[digc][1])
         print(DOChannels)
 
         self.DigitalOutputs = DaqInt.WriteDigital(Channels=DOChannels)
@@ -117,12 +117,14 @@ class ChannelsConfig():
         self.DCGain = DCGain
         self._InitAnalogInputs()
         print(DigColumns)
-        self.DigColumns = DigColumns
+        self.DigColumns = [DigColumns]
         if self.DigColumns:
             self._InitDigitalOutputs()
 
     def StartAcquisition(self, Fs, Refresh, Vgs, Vds, **kwargs):
         self.SetBias(Vgs=Vgs, Vds=Vds)
+        self.SetDigitalOutputs()
+
         EveryN = Refresh*Fs # TODO check this
         self.AnalogInputs.ReadContData(Fs=Fs,
                                        EverySamps=EveryN)
@@ -135,22 +137,24 @@ class ChannelsConfig():
         self.Vgs = Vgs
         self.Vds = Vds
 
-    def SetDigitalOutputs(self, nSampsCo):
+    def SetDigitalOutputs(self):
         print('SetDigitalOutputs')
         DOut = np.array([], dtype=np.bool)
 
         for nCol in range(len(self.DigColumns)):
-            Lout = np.zeros((1, nSampsCo*len(self.DigColumns)), dtype=np.bool)
-            Lout[0, nSampsCo * nCol: nSampsCo * (nCol + 1)] = True
+            Lout = np.zeros((1, len(self.DigColumns)), dtype=np.bool)
+            Lout[0, nCol: (nCol + 1)] = True
             Cout = np.vstack((Lout, ~Lout))
             DOut = np.vstack((DOut, Cout)) if DOut.size else Cout
 
-        SortDInds = []
-        for line in DOut[0:-1:2, :]:
-            SortDInds.append(np.where(line))
+#        SortDInds = []
+#        for line in DOut[0:-1:2, :]:
+#            SortDInds.append(np.where(line))
+#
+#        self.SortDInds = SortDInds
 
-        self.SortDInds = SortDInds
-        self.DigitalOutputs.SetContSignal(Signal=DOut.astype(np.uint8))
+        print(DOut.astype(np.uint8), 'Digital Signal')
+        self.DigitalOutputs.SetDigitalSignal(Signal=DOut.astype(np.uint8))
 
     def _SortChannels(self, data, SortDict):
         (samps, inch) = data.shape
