@@ -249,7 +249,7 @@ class SampSetParam(pTypes.GroupParameter):
 
 class DataAcquisitionThread(Qt.QThread):
     NewTimeData = Qt.pyqtSignal()
-
+    
     def __init__(self, ChannelsConfigKW, SampKw):
         super(DataAcquisitionThread, self).__init__()
         print('ChannelsConfigKW', ChannelsConfigKW)
