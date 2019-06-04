@@ -56,6 +56,8 @@ class ChannelsConfig():
     DataEveryNEvent = None
     DataDoneEvent = None
 
+    ClearSig = np.zeros((2, 1), dtype=np.bool).astype(np.uint8)
+
     def _InitAnalogInputs(self):
         print('InitAnalogInputs')
         self.DCChannelIndex = {}
@@ -186,7 +188,7 @@ class ChannelsConfig():
                 _DataEveryNEvent(aiDataAC)
             elif self.AcqDC:
                 _DataEveryNEvent(aiDataDC)
-        
+
     def DoneEventCallBack(self, Data):
         print('Done callback')
 
@@ -194,5 +196,9 @@ class ChannelsConfig():
         print('Stopppp')
         self.SetBias(Vgs=0, Vds=0)
         self.AnalogInputs.StopContData()
-
+        if self.DigitalOutputs is not None:
+            print('Clear Digital')
+            self.DigitalOutputs.SetDigitalSignal(Signal=self.ClearSig)
+            self.DigitalOutputs.ClearTask()
+            self.DigitalOutputs = None
 
