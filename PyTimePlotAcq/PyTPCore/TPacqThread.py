@@ -10,10 +10,7 @@ from PyQt5 import Qt
 import pyqtgraph.parametertree.parameterTypes as pTypes
 import numpy as np
 import TPacqCore as CoreMod
-
 import PyCont.FileModule as FileMod
-#import FileModule as FileMod
-
 
 SampSettingConf = ({'title': 'Channels Config',
                     'name': 'ChsConfig',
@@ -21,11 +18,21 @@ SampSettingConf = ({'title': 'Channels Config',
                     'children': ({'title': 'Acquire DC',
                                   'name': 'AcqDC',
                                   'type': 'bool',
-                                  'value': False},
+                                  'value': True},
                                  {'title': 'Acquire AC',
                                   'name': 'AcqAC',
                                   'type': 'bool',
-                                  'value': True},
+                                  'value': False},
+                                 {'title': 'DC Gain',
+                                  'name': 'DCGain',
+                                  'type': 'float',
+                                  'value': 10e3,
+                                  'siPrefix': True, },
+                                 {'title': 'AC Gain',
+                                  'name': 'ACGain',
+                                  'type': 'float',
+                                  'value': 1e5,
+                                  'siPrefix': True, },
                                  {'tittle': 'Channels',
                                   'name': 'Channels',
                                   'type': 'group',
@@ -101,14 +108,14 @@ SampSettingConf = ({'title': 'Channels Config',
                                                 'type': 'list',
                                                 'values': [
                                                            '',
-                                                           'Col1', 
-                                                           'Col2', 
+                                                           'Col1',
+                                                           'Col2',
                                                            'Col3',
-                                                           'Col4', 
+                                                           'Col4',
                                                            'Col5',
-                                                           'Col6', 
+                                                           'Col6',
                                                            'Col7',
-                                                           'Col8', 
+                                                           'Col8',
                                                            ],
                                                 },), },
 
@@ -166,11 +173,14 @@ class SampSetParam(pTypes.GroupParameter):
         self.ChsConfig = self.param('ChsConfig')
         self.Channels = self.ChsConfig.param('Channels')
         self.Columns = self.ChsConfig.param('DigColumns')
+        self.DCGain = self.ChsConfig.param('DCGain')
+        self.ACGain = self.ChsConfig.param('ACGain')
 
         # Init Settings
         self.on_Acq_Changed()
         self.on_Ch_Changed()
         self.on_Fs_Changed()
+        self.on_Gain_Changed()
 
         # Signals
         self.Channels.sigTreeStateChanged.connect(self.on_Ch_Changed)
@@ -178,6 +188,8 @@ class SampSetParam(pTypes.GroupParameter):
         self.ChsConfig.param('AcqAC').sigValueChanged.connect(self.on_Acq_Changed)
         self.ChsConfig.param('AcqDC').sigValueChanged.connect(self.on_Acq_Changed)
         self.Fs.sigValueChanged.connect(self.on_Fs_Changed)
+        self.DCGain.sigValueChanged.connect(self.on_Gain_Changed)
+        self.ACGain.sigValueChanged.connect(self.on_Gain_Changed)
 
     def on_Acq_Changed(self):
         for p in self.ChsConfig.children():
@@ -195,6 +207,11 @@ class SampSetParam(pTypes.GroupParameter):
                 Index = 2
             if self.Fs.value() > (1e6/(len(self.Chs)*Index)):
                 self.SampSet.param('Fs').setValue(1e6/(len(self.Chs)*Index))
+
+    def on_Gain_Changed(self):
+        if self.Chs:
+            self.ChsConfig.param('DCGain').value()
+            self.ChsConfig.param('ACGain').value()
 
     def on_Ch_Changed(self):
         self.Chs = []
@@ -249,7 +266,7 @@ class SampSetParam(pTypes.GroupParameter):
 
 class DataAcquisitionThread(Qt.QThread):
     NewTimeData = Qt.pyqtSignal()
-    
+
     def __init__(self, ChannelsConfigKW, SampKw):
         super(DataAcquisitionThread, self).__init__()
         print('ChannelsConfigKW', ChannelsConfigKW)

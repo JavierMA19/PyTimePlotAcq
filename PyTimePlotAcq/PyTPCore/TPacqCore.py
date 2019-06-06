@@ -56,7 +56,8 @@ class ChannelsConfig():
     DataEveryNEvent = None
     DataDoneEvent = None
 
-    ClearSig = np.zeros((2, 1), dtype=np.bool).astype(np.uint8)
+    ClearSig = np.zeros((1, len(doColumns)), dtype=np.bool).astype(np.uint8)
+    ClearSig = np.hstack((ClearSig, ClearSig))
 
     def _InitAnalogInputs(self):
         print('InitAnalogInputs')
@@ -92,11 +93,17 @@ class ChannelsConfig():
         print(self.DigColumns)
         DOChannels = []
 
-        for digc in self.DigColumns:
+        for digc in sorted(doColumns):
             print(digc)
             DOChannels.append(doColumns[digc][0])
             DOChannels.append(doColumns[digc][1])
         print(DOChannels)
+
+#        for digc in self.DigColumns:
+#            print(digc)
+#            DOChannels.append(doColumns[digc][0])
+#            DOChannels.append(doColumns[digc][1])
+#        print(DOChannels)
 
         self.DigitalOutputs = DaqInt.WriteDigital(Channels=DOChannels)
 
@@ -114,6 +121,7 @@ class ChannelsConfig():
         self._InitAnalogOutputs(ChVds=ChVds, ChVs=ChVs)
 
         self.ChNamesList = sorted(Channels)
+        print('Gains', ACGain, DCGain)
         self.AcqAC = AcqAC
         self.AcqDC = AcqDC
         self.ACGain = ACGain
@@ -143,22 +151,35 @@ class ChannelsConfig():
 
     def SetDigitalOutputs(self):
         print('SetDigitalOutputs')
-        DOut = np.array([], dtype=np.bool)
-
-        for nCol in range(len(self.DigColumns)):
-            Lout = np.zeros((1, len(self.DigColumns)), dtype=np.bool)
-            Lout[0, nCol: (nCol + 1)] = True
-            Cout = np.vstack((Lout, ~Lout))
-            DOut = np.vstack((DOut, Cout)) if DOut.size else Cout
-
-#        SortDInds = []
-#        for line in DOut[0:-1:2, :]:
-#            SortDInds.append(np.where(line))
+#        DOut = np.array([], dtype=np.bool)
 #
-#        self.SortDInds = SortDInds
+#        for nCol in range(len(doColumns)):
+##        for nCol in range(len(self.DigColumns)):
+##            Lout = np.zeros((1, len(self.DigColumns)), dtype=np.bool)
+#            Lout = np.zeros((1, len(doColumns)), dtype=np.bool)
+#            Lout[0, nCol: (nCol + 1)] = True
+#            Cout = np.vstack((Lout, ~Lout))
+#            DOut = np.vstack((DOut, Cout)) if DOut.size else Cout
+#
+##        SortDInds = []
+##        for line in DOut[0:-1:2, :]:
+##            SortDInds.append(np.where(line))
+##
+##        self.SortDInds = SortDInds
+#
+#        print(DOut.astype(np.uint8), 'Digital Signal')
+        Lout = np.zeros((1, len(doColumns)), dtype=np.bool)
+        index = 0
+        for Col in sorted(doColumns.keys()):
+            for c in self.DigColumns:
+                if Col == c:
+                    Lout[0, index: (index + 1)] = True
+            index += 1
+        Sig = np.hstack((Lout, ~Lout))
+        print(Sig)
 
-        print(DOut.astype(np.uint8), 'Digital Signal')
-        self.DigitalOutputs.SetDigitalSignal(Signal=DOut.astype(np.uint8))
+        self.DigitalOutputs.SetDigitalSignal(Signal=Sig.astype(np.uint8))
+#        self.DigitalOutputs.SetDigitalSignal(Signal=DOut.astype(np.uint8))
 
     def _SortChannels(self, data, SortDict):
         (samps, inch) = data.shape
