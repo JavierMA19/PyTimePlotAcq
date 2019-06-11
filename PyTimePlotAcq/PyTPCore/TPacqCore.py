@@ -151,34 +151,36 @@ class ChannelsConfig():
 
     def SetDigitalOutputs(self):
         print('SetDigitalOutputs')
-#        DOut = np.array([], dtype=np.bool)
-#
-#        for nCol in range(len(doColumns)):
-##        for nCol in range(len(self.DigColumns)):
-##            Lout = np.zeros((1, len(self.DigColumns)), dtype=np.bool)
-#            Lout = np.zeros((1, len(doColumns)), dtype=np.bool)
-#            Lout[0, nCol: (nCol + 1)] = True
-#            Cout = np.vstack((Lout, ~Lout))
-#            DOut = np.vstack((DOut, Cout)) if DOut.size else Cout
-#
-##        SortDInds = []
-##        for line in DOut[0:-1:2, :]:
-##            SortDInds.append(np.where(line))
-##
-##        self.SortDInds = SortDInds
-#
-#        print(DOut.astype(np.uint8), 'Digital Signal')
-        Lout = np.zeros((1, len(doColumns)), dtype=np.bool)
+        DOut = np.array([], dtype=np.bool)
+        
+        for nCol in range(len(doColumns)):
+            Lout = np.zeros((1, len(doColumns)), dtype=np.bool)
+            Lout[0, nCol: (nCol + 1)] = True
+            Cout = np.vstack((Lout, ~Lout))
+            DOut = np.vstack((DOut, Cout)) if DOut.size else Cout
+        
+        sig = DOut.astype(np.uint8)
+        print(DOut.astype(np.uint8), 'Digital Signal')
+        
         index = 0
         for Col in sorted(doColumns.keys()):
             for c in self.DigColumns:
                 if Col == c:
-                    Lout[0, index: (index + 1)] = True
+                    print index
+                    newSig = sig[:, index]
             index += 1
-        Sig = np.hstack((Lout, ~Lout))
-        print(Sig)
+#        print(DOut.astype(np.uint8), 'Digital Signal')
+#        Lout = np.zeros((1, len(doColumns)), dtype=np.bool)
+#        index = 0
+#        for Col in sorted(doColumns.keys()):
+#            for c in self.DigColumns:
+#                if Col == c:
+#                    Lout[0, index: (index + 1)] = True
+#            index += 1
+#        Sig = np.vstack((Lout, ~Lout))
+        print(newSig)
 
-        self.DigitalOutputs.SetDigitalSignal(Signal=Sig.astype(np.uint8))
+        self.DigitalOutputs.SetDigitalSignal(Signal=newSig)
 #        self.DigitalOutputs.SetDigitalSignal(Signal=DOut.astype(np.uint8))
 
     def _SortChannels(self, data, SortDict):
@@ -203,7 +205,7 @@ class ChannelsConfig():
                 aiDataAC = aiDataAC / self.ACGain
 
             if self.AcqAC and self.AcqDC:
-                aiData = np.hstack((aiDataDC, aiDataAC))
+                aiData = np.vstack((aiDataDC, aiDataAC))
                 _DataEveryNEvent(aiData)
             elif self.AcqAC:
                 _DataEveryNEvent(aiDataAC)
