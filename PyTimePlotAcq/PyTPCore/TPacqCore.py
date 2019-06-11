@@ -152,16 +152,16 @@ class ChannelsConfig():
     def SetDigitalOutputs(self):
         print('SetDigitalOutputs')
         DOut = np.array([], dtype=np.bool)
-        
+
         for nCol in range(len(doColumns)):
             Lout = np.zeros((1, len(doColumns)), dtype=np.bool)
             Lout[0, nCol: (nCol + 1)] = True
             Cout = np.vstack((Lout, ~Lout))
             DOut = np.vstack((DOut, Cout)) if DOut.size else Cout
-        
+
         sig = DOut.astype(np.uint8)
         print(DOut.astype(np.uint8), 'Digital Signal')
-        
+
         index = 0
         for Col in sorted(doColumns.keys()):
             for c in self.DigColumns:
