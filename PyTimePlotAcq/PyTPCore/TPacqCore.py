@@ -192,7 +192,6 @@ class ChannelsConfig():
         return sData
 
     def EveryNEventCallBack(self, Data):
-
         _DataEveryNEvent = self.DataEveryNEvent
 
         if _DataEveryNEvent is not None:
@@ -205,7 +204,8 @@ class ChannelsConfig():
                 aiDataAC = aiDataAC / self.ACGain
 
             if self.AcqAC and self.AcqDC:
-                aiData = np.vstack((aiDataDC, aiDataAC))
+                aiData = np.hstack((aiDataDC, aiDataAC))
+                print(aiData.shape)
                 _DataEveryNEvent(aiData)
             elif self.AcqAC:
                 _DataEveryNEvent(aiDataAC)

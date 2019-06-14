@@ -240,7 +240,7 @@ class SampSetParam(pTypes.GroupParameter):
             for Ch in self.Chs:
                 ChNames[Ch + self.Col + 'AC'] = Ind
                 Ind += 1
-
+        print(ChNames)
         return ChNames
 
     def GetSampKwargs(self):
