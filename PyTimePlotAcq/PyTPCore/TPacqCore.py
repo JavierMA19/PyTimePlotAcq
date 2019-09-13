@@ -166,7 +166,7 @@ class ChannelsConfig():
         for Col in sorted(doColumns.keys()):
             for c in self.DigColumns:
                 if Col == c:
-                    print index
+                    print(index)
                     newSig = sig[:, index]
             index += 1
 #        print(DOut.astype(np.uint8), 'Digital Signal')
