@@ -9,7 +9,7 @@ Created on Wed Mar  6 12:25:45 2019
 from PyQt5 import Qt
 import pyqtgraph.parametertree.parameterTypes as pTypes
 import numpy as np
-import TPacqCore as CoreMod
+import PyTPCore.TPacqCore as CoreMod
 import PyCont.FileModule as FileMod
 
 SampSettingConf = ({'title': 'Channels Config',
