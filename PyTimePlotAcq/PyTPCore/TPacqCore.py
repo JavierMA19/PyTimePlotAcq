@@ -163,7 +163,7 @@ class ChannelsConfig():
         print(DOut.astype(np.uint8), 'Digital Signal')
 
         index = 0
-        for Col in sorted(doColumns.keys()):
+        for Col in sorted(list(doColumns.keys())):
             for c in self.DigColumns:
                 if Col == c:
                     print(index)
@@ -186,7 +186,7 @@ class ChannelsConfig():
     def _SortChannels(self, data, SortDict):
         (samps, inch) = data.shape
         sData = np.zeros((samps, len(SortDict)))
-        for chn, inds in sorted(SortDict.iteritems()):
+        for chn, inds in sorted(SortDict.items()):
             sData[:, inds[1]] = data[:, inds[0]]
 
         return sData
