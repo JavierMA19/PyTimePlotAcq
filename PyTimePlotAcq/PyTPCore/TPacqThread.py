@@ -10,7 +10,8 @@ from PyQt5 import Qt
 import pyqtgraph.parametertree.parameterTypes as pTypes
 import numpy as np
 import PyTPCore.TPacqCore as CoreMod
-import PyCont.FileModule as FileMod
+# import PyCont.FileModule as FileMod
+import PyqtTools.FileModule as FileMod
 
 SampSettingConf = ({'title': 'Channels Config',
                     'name': 'ChsConfig',
