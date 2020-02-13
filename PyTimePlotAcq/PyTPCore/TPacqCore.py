@@ -116,7 +116,7 @@ class ChannelsConfig():
 
     def __init__(self, Channels, DigColumns,
                  AcqDC=True, AcqAC=True,
-                 ChVds='ao0', ChVs='ao1',
+                  ChVds='ao0', ChVs='ao1',
                  ACGain=1e6, DCGain=10e3):
         print('InitChannels')
         self._InitAnalogOutputs(ChVds=ChVds, ChVs=ChVs)
